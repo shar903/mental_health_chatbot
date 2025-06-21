@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+*.pkl
+*.pt
+*.safetensors
+*.dll
+*.lib
+chatbot-model/
