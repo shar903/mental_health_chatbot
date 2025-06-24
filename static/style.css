@@ -1,13 +1,18 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f2f6fc;
     margin: 0;
     padding: 0;
-    display: flex;
     height: 100vh;
-    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
     justify-content: center;
+    align-items: center;
+    background-image: url("/static/image.webp"); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #f5f5f5; 
 }
+
 
 .chat-container {
     background: #ffffff;
@@ -16,6 +21,8 @@ body {
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     width: 400px;
     max-width: 90%;
+    margin-left: 20vw;
+
 }
 
 h1 {
