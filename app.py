@@ -1,53 +1,35 @@
 from flask import Flask, render_template, request
-from openai import OpenAI
-import os
-from dotenv import load_dotenv  
-
-
-load_dotenv()
-
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from chatbot import generate_response  
 
 app = Flask(__name__)
 
 
-VAGUE_REPLIES = ["I don't know", "I'm not sure", "That's interesting"]
-def fallback():
-    return "I'm here for you. It's okay to feel this way."
+emotion_model_name = "monologg/bert-base-cased-goemotions-original"
+emotion_tokenizer = AutoTokenizer.from_pretrained(emotion_model_name)
+emotion_model = AutoModelForSequenceClassification.from_pretrained(emotion_model_name)
+emotion_classifier = pipeline("text-classification", model=emotion_model, tokenizer=emotion_tokenizer, top_k=1)
 
 
-def generate_response(user_input):
+def detect_emotion(text):
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a supportive mental health chatbot."},
-                {"role": "user", "content": user_input}
-            ]
-        )
-        reply = response.choices[0].message.content.strip()
-
-        
-        if any(x in reply.lower() for x in VAGUE_REPLIES):
-            return fallback()
-
-        return reply
+        result = emotion_classifier(text)
+        emotion = result[0][0]['label'] if isinstance(result[0], list) else result[0]['label']
+        return emotion
     except Exception as e:
-        return f"Sorry, something went wrong: {str(e)}"
+        print("Emotion detection failed:", e)
+        return "unknown"
 
-
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
-
 
 @app.route("/chat", methods=["POST"])
 def chat():
     user_input = request.form["user_input"]
-    bot_response = generate_response(user_input)
-    return render_template("index.html", user_input=user_input, bot_response=bot_response)
-
+    emotion = detect_emotion(user_input)
+    bot_response = generate_response(user_input, emotion)
+    return render_template("index.html", user_input=user_input, bot_response=bot_response, emotion=emotion)
 
 if __name__ == "__main__":
     app.run(debug=True)
